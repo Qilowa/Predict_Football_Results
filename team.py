@@ -61,15 +61,14 @@ class Team():
 
         self.slope, self.intercept, r_value, p_value, std_err = stats.linregress(X, Y)
 
+    def get_shot_conversion(self):
+        return self.goals/self.shot_on_target
 
-    def predict_goals(self, x):
-        return self.slope * x + self.intercept
 
-
-    def get_kde_SoT(self):
+    def get_kde_shot_on_target(self):
         return self.kde_st
 
-    def get_kde_SoTA(self):
+    def get_kde_shot_on_target_allowed(self):
         return self.kde_sta
 
 
@@ -91,13 +90,12 @@ class Team():
             pass
 
 
-        plt.show()
+        #plt.show()
 
 
 
 def split_data(df, size=0.6):
     n = int(len(df) * size)
-    print(n)
     df1 = df.iloc[:n, :]
     df2 = df.iloc[n:, :]
 
@@ -128,20 +126,30 @@ def calculate_shots_on_target(df) -> dict:
 
 
 if __name__ == "__main__":
-    dataframe = pd.read_csv("data/F1_2017.csv")
+    dataframe = pd.read_csv("data/Liga/SP1_2019.csv")
 
     # split dataframe
-    df1, df2 = split_data(dataframe, 0.6)
+    df1, df2 = split_data(dataframe, 0.7)
 
     dic = calculate_shots_on_target(df1)
 
-    team = dic["Monaco"]
+    # team 1
+    team1 = dic["Sociedad"]
 
-    team.compute_distributions(df1)
+    team1.compute_distributions(df1)
 
-    team.get_kde_SoT().sample()
+    #team1.plot(mode="st")
+    team1.plot(mode="sta")
 
-    team.plot()
+    #team 2
+    team2 = dic["Barcelona"]
+
+    team2.compute_distributions(df1)
+
+    #team2.plot(mode="sta")
+    team2.plot(mode="st")
+
+    plt.show()
 
 
     """bandwidths = 10 ** np.linspace(-1, 1, 100)

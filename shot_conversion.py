@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from shots_on_target import Team, calculate_shots_on_target, split_data
+from team import Team, calculate_shots_on_target, split_data
 from scipy import stats
 
 def create_data(df, team):
@@ -13,8 +13,8 @@ def create_data(df, team):
     return pd.concat([df1, df2])
 
 
-dataframe1 = pd.read_csv("data/F1_2017.csv")
-dataframe2 = pd.read_csv("data/F1_2018.csv")
+dataframe1 = pd.read_csv("data/Ligue_1/F1_2017.csv")
+dataframe2 = pd.read_csv("data/Ligue_1/F1_2018.csv")
 
 dataframe = pd.concat([dataframe1, dataframe2])
 
@@ -22,7 +22,9 @@ dataframe = pd.concat([dataframe1, dataframe2])
 # split dataframe
 df1, df2 = split_data(dataframe, 0.8)
 
-team = create_data(df1, "Marseille")
+#team = create_data(df1, "Marseille")
+team = df1[["FTAG", "AST"]]
+team.columns = ["Goals", "ShotOnTarget"]
 
 X, Y = team["ShotOnTarget"], team["Goals"]
 
@@ -33,10 +35,10 @@ def predict(x):
 
 line = predict(X)
 
-plt.scatter(X, Y)
-plt.plot(X, line, c='r')
+#plt.scatter(X, Y)
+#plt.plot(X, line, c='r')
 
-#sns.jointplot(x="ShotOnTarget", y="Goals", data=team, kind="reg")
+sns.jointplot(x="ShotOnTarget", y="Goals", data=team, kind="reg")
 plt.grid(True)
 
 plt.show()
