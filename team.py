@@ -9,88 +9,41 @@ from scipy import stats
 class Team():
     def __init__(self, name):
         self.name = name
-        self.shot_on_target = 0
-        self.shot_on_target_allowed = 0
         self.nb_games = 0
         self.goals = 0
+
+        self.shot_on_target_list = []
+        self.shot_on_target_allowed_list = []
 
         self.x_d = np.linspace(0, 20, 1000)
 
     def play_match(self, row):
+
         home_sot = row["HST"]
         away_sot = row["AST"]
 
-        self.shot_on_target += home_sot
-        self.shot_on_target_allowed += away_sot
-        self.nb_games += 1
-        self.goals += row["FTHG"]
+        if row["HomeTeam"] == self.name:
+            self.nb_games += 1
+            self.goals += row["FTHG"]
 
-    def compute_distributions(self, df):
-        as_home = df.loc[df["HomeTeam"] == self.name]
-        as_away = df.loc[df["AwayTeam"] == self.name]
+            self.shot_on_target_list.append(home_sot)
+            self.shot_on_target_allowed_list.append(away_sot)
+        else:
+            self.nb_games += 1
+            self.goals += row["FTHG"]
 
-        # shots on target
-        st1 = np.array(as_home["HST"])
-        st2 = np.array(as_away["AST"])
-        self.st = np.concatenate((st1, st2), axis=0)
+            self.shot_on_target_list.append(away_sot)
+            self.shot_on_target_allowed_list.append(home_sot)
 
-        # shot on target model
-        self.kde_st = KernelDensity(bandwidth=1.0, kernel="gaussian")
-        self.kde_st.fit(self.st[:, None])
+    def get_sot_list(self):
+        return self.shot_on_target_list
 
+    def get_sota_list(self):
+        return self.shot_on_target_allowed_list
 
-        # shots on target allowed
-        sta1 = np.array(as_home["AST"])
-        sta2 = np.array(as_away["HST"])
-
-        self.sta = np.concatenate((sta1, sta2), axis=0)
-
-        # shots on target allowed model 
-        self.kde_sta = KernelDensity(bandwidth=1.0, kernel="gaussian")
-        self.kde_sta.fit(self.sta[:, None])
-
-    def calculate_shot_conversion(self, df):
-        df1 = df.loc[df["HomeTeam"] == self.name][["FTHG", "HST"]]
-        df1.columns = ["Goals", "ShotOnTarget"]
-        df2 = df.loc[df["AwayTeam"] == self.name][["FTAG", "AST"]] 
-        df2.columns = ["Goals", "ShotOnTarget"]
-
-        df = pd.concat([df1, df2])
-
-        X, Y = df["ShotOnTarget"], df["Goals"]
-
-        self.slope, self.intercept, r_value, p_value, std_err = stats.linregress(X, Y)
 
     def get_shot_conversion(self):
-        return self.goals/self.shot_on_target
-
-
-    def get_kde_shot_on_target(self):
-        return self.kde_st
-
-    def get_kde_shot_on_target_allowed(self):
-        return self.kde_sta
-
-
-    def plot(self, mode="st"):
-        if mode == "st":
-            # score_samples returns the log of the probability density
-            logprob = self.kde_st.score_samples(self.x_d[:, None])
-
-            plt.fill_between(self.x_d, np.exp(logprob), alpha=0.5)
-            plt.plot(self.st, np.full_like(self.st, -0.01), '|k', markeredgewidth=1) #Return a full array with the same shape and type as a given array.
-            plt.ylim(-0.02, 0.22)
-        elif mode == "sta":
-            logprob = self.kde_sta.score_samples(self.x_d[:, None])
-
-            plt.fill_between(self.x_d, np.exp(logprob), alpha=0.5)
-            plt.plot(self.sta, np.full_like(self.sta, -0.01), '|k', markeredgewidth=1) #Return a full array with the same shape and type as a given array.
-            plt.ylim(-0.02, 0.22)
-        else:
-            pass
-
-
-        #plt.show()
+        return self.goals/sum(self.shot_on_target_list)
 
 
 
