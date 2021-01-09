@@ -121,12 +121,16 @@ if __name__ == "__main__":
     bookmakers, model, real = monte.make_predictions()
 
     correct = 0
-    for m, r in zip(model, real):
+    book = 0
+    for m, b, r in zip(model, bookmakers, real):
         if m == r:
             correct += 1
+        if b == r:
+            book += 1
 
-    print(correct, len(model))
+    print(correct, book, len(model))
 
-    plt.hist([model, bookmakers, real], label=["Model", "Bookmakers", "Actual"])
-    plt.legend()
+    with plt.style.context("ggplot"):
+        plt.hist([model, bookmakers, real], label=["Model", "Bookmakers", "Actual"])
+        plt.legend()
     plt.show()
