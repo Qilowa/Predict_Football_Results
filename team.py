@@ -14,8 +14,7 @@ class Team():
 
         self.shot_on_target_list = []
         self.shot_on_target_allowed_list = []
-
-        self.x_d = np.linspace(0, 20, 1000)
+        self.shot_conversion_list = []
 
     def play_match(self, row):
 
@@ -28,12 +27,20 @@ class Team():
 
             self.shot_on_target_list.append(home_sot)
             self.shot_on_target_allowed_list.append(away_sot)
+            try:
+                self.shot_conversion_list.append(row["FTHG"] / home_sot)
+            except:
+                self.shot_conversion_list.append(0)
         else:
             self.nb_games += 1
-            self.goals += row["FTHG"]
+            self.goals += row["FTAG"]
 
             self.shot_on_target_list.append(away_sot)
             self.shot_on_target_allowed_list.append(home_sot)
+            try:
+                self.shot_conversion_list.append(row["FTAG"] / away_sot)
+            except:
+                self.shot_conversion_list.append(0)
 
     def get_sot_list(self):
         return self.shot_on_target_list
@@ -44,8 +51,6 @@ class Team():
 
     def get_shot_conversion(self):
         return self.goals/sum(self.shot_on_target_list)
-
-
 
 def split_data(df, size=0.6):
     n = int(len(df) * size)

@@ -29,9 +29,13 @@ class MonteCarlo():
         home = 0
         away = 0
 
+        x = np.array(self.teams[team1].get_sota_list()).reshape(-1, 1)
+
         for i in range(self.iterations):
             home_shots = home_kernel.sample()[0][0]
             away_shots = away_kernel.sample()[0][0]
+
+            # print(home_shots, away_shots)
             
             home_goals = np.round(home_shots * self.teams[team1].get_shot_conversion())
             away_goals = np.round(away_shots * self.teams[team2].get_shot_conversion())
@@ -42,6 +46,7 @@ class MonteCarlo():
                 home += 1
             else:
                 away += 1
+
         
         print(home, draw, away)
 
@@ -53,7 +58,6 @@ class MonteCarlo():
     
     def __split_data(self, df, size=0.6):
         n = int(len(df) * size)
-        print(n)
         df1 = df.iloc[:n, :]
         df2 = df.iloc[n:, :]
 
