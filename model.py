@@ -5,13 +5,13 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
 
-class MonteCarlo():
-    def __init__(self, dataframe, iterations=1000):
-        self.dataframe = dataframe
+class Model():
+    def __init__(self, path="data/Liga/SP1_2019.csv", iterations=1000):
+        self.dataframe = pd.read_csv(path)
 
-        self.train_data, self.test_data = self.__split_data(dataframe, 0.7)
+        self.train_data, self.test_data = self.__split_data(self.dataframe, 0.7)
 
-        self.teams = calculate_shots_on_target(dataframe)
+        self.teams = calculate_shots_on_target(self.dataframe)
         self.iterations = iterations
 
             
@@ -46,7 +46,7 @@ class MonteCarlo():
                 away += 1
 
         
-        print(home, draw, away)
+        #print(home, draw, away)
 
         return home/self.iterations, draw/self.iterations, away/self.iterations
 
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     dataframe = pd.read_csv("data/Liga/SP1_2019.csv")
 
-    monte = MonteCarlo(dataframe)
+    monte = Model(dataframe)
 
     bookmakers, model, real = monte.make_predictions()
 

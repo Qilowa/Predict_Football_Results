@@ -3,6 +3,7 @@
 ## Description
 
 Predict football results using the number of shots on target.
+Data are taken from https://www.football-data.co.uk/
 
 ### Distributions
 The method is to map the distribution of a team's number of shots on target throughout a season and the distributions of the opposite team's number of shots on target they allowed during the season. 
