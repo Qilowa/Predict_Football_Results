@@ -24,6 +24,8 @@ The code :
 home_dist = np.array(self.teams[team1].get_sot_list() + self.teams[team2].get_sota_list()).reshape(-1, 1)
 home_kernel = KernelDensity(bandwidth=1.0, kernel="gaussian")
 home_kernel.fit(home_dist)
+
+
 ```
 
 For example, this is the distribution of Levante's number of shots on target (on the right).
@@ -31,4 +33,36 @@ For example, this is the distribution of Levante's number of shots on target (on
 ![kde models](./imgs/kde.png?raw=true)
 
 Let's do the same for Granada
-![kde models](./imgs/kde2.png?raw=true)
+![kde models](./imgs/distributions2.png?raw=true)
+
+By calling ```home_kernel.sample()```, we get a sample from the distribution, so a number of shots on target. The next step is to multiply this number to a shot conversion rate.
+> The shot conversion rate of a team is simply : ```number of goals during the season / number of shots on target during the season```
+
+Using Monte Carlo Simulation : 
+
+```
+draw = 0
+home = 0     
+away = 0
+
+for i in range(self.iterations):
+            home_shots = home_kernel.sample()[0][0]
+            away_shots = away_kernel.sample()[0][0]
+            
+            home_goals = np.round(home_shots * self.teams[team1].get_shot_conversion())
+            away_goals = np.round(away_shots * self.teams[team2].get_shot_conversion())
+
+            if home_goals == away_goals:
+                draw += 1
+            elif home_goals > away_goals:
+                home += 1
+            else:
+                away += 1
+ ```
+
+## Results
+I tested the model on the Spain La Liga 2019-2020 season.
+The model is slighty worse than bookmakers prediction (B365).
+The model makes good predictions 39% of the time whereas bookmakers are right 41% of the time.
+
+![results](./imgs/results.png?raw=true)
