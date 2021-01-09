@@ -29,8 +29,6 @@ class MonteCarlo():
         home = 0
         away = 0
 
-        x = np.array(self.teams[team1].get_sota_list()).reshape(-1, 1)
-
         for i in range(self.iterations):
             home_shots = home_kernel.sample()[0][0]
             away_shots = away_kernel.sample()[0][0]
