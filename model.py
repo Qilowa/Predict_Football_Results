@@ -4,6 +4,7 @@ import numpy as np
 from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KernelDensity
+from sklearn.model_selection import GridSearchCV, LeaveOneOut
 
 class Model():
     def __init__(self, path="data/Liga/SP1_2019.csv", iterations=1000):
@@ -14,15 +15,30 @@ class Model():
         self.teams = calculate_shots_on_target(self.dataframe)
         self.iterations = iterations
 
+        self.bandwidths = 10 ** np.linspace(-1, 1, 100)
+
             
     def get_probability(self, team1, team2):
-
         home_dist = np.array(self.teams[team1].get_sot_list() + self.teams[team2].get_sota_list()).reshape(-1, 1)
-        home_kernel = KernelDensity(bandwidth=1.0, kernel="gaussian")
+
+        grid = GridSearchCV(KernelDensity(kernel='gaussian'),
+                            {'bandwidth': self.bandwidths},
+                            cv=LeaveOneOut())
+        grid.fit(home_dist)
+        bandwidth = grid.best_params_["bandwidth"]
+
+        home_kernel = KernelDensity(bandwidth=bandwidth, kernel="gaussian")
         home_kernel.fit(home_dist)
 
         away_dist = np.array(self.teams[team1].get_sota_list() + self.teams[team2].get_sot_list()).reshape(-1, 1)
-        away_kernel = KernelDensity(bandwidth=1.0, kernel="gaussian")
+
+        grid = GridSearchCV(KernelDensity(kernel='gaussian'),
+                            {'bandwidth': self.bandwidths},
+                            cv=LeaveOneOut())
+        grid.fit(away_dist)
+        bandwidth = grid.best_params_["bandwidth"]
+
+        away_kernel = KernelDensity(bandwidth=bandwidth, kernel="gaussian")
         away_kernel.fit(away_dist)
 
         draw = 0
@@ -32,8 +48,6 @@ class Model():
         for i in range(self.iterations):
             home_shots = home_kernel.sample()[0][0]
             away_shots = away_kernel.sample()[0][0]
-
-            # print(home_shots, away_shots)
             
             home_goals = np.round(home_shots * self.teams[team1].get_shot_conversion())
             away_goals = np.round(away_shots * self.teams[team2].get_shot_conversion())
